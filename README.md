@@ -1,86 +1,635 @@
-# Python Package Template
+# skintone
 
-📦 一个快速上传到 [PyPI](https://pypi.org/) 的 **Python Package** 模版。
+skintone は[Kintone](https://kintone.cybozu.co.jp/index.html)にアクセスするための Python ライブラリです。
 
-> 上传到 PyPI 后可以使用 `pip install` 安装。
+```python
+from skintone import kintone, kintone_file
 
-## 1 使用方法
-
-1. 点击本项目右上角的绿色按钮 `Use this template`（使用此模板），输入名称和说明，完成创建；
-
-2. 将项目克隆到本地，这里以本项目为例，实际操作时这里需要替换你自己的项目；
-
-    ```bash
-    git clone https://github.com/Ailln/python-package-template.git --depth 1
-    ```
-
-3. 修改配置，文件中有提示；
-
-    ```bash
-    cd your_package_name
-
-    # 1. 替换默认项目名称 package_name 为你的项目名称
-    # Usage: bash scripts/set_package_name.sh os_name old_name new_name
-    # os_name 支持的有 `mac` 和 `linux`
-    # old_name 是 package_name
-    # new_name 是你的项目名称
-    bash scripts/set_package_name.sh mac package_name your_package_name
-
-    # 2. 将 `README.md` 修改为你的项目介绍，也就是你当前在读的这个文本。
-    ```
-
-4. 编写你的 Package 代码，并进行测试。
-
-    ```shell
-    # 在本地进行充分测试
-    bash scripts/local_test.sh
-    ```
-
-5. 上传到 PyPi（需要注册），参考[如何发布自己的包到 pypi](https://www.v2ai.cn/2018/07/30/python/1-pypi/)；
-
-    ```shell
-    bash scripts/upload_pypi.sh
-    ```
-
-6. 更新到 Github（非必须）。
-
-    ```bash
-    git push
-    ```
-
-## 2 项目结构
-
-```
-.
-├── README.md # 项目文档
-├── package_name # 项目名称
-│    ├── shell # 在命令行中执行的代码
-│    │    ├── __init__.py
-│    │    └── usage.py
-│    └── src # 静态资源
-│          └── temp.txt
-├── scripts # 一些常用脚本
-│    ├── set_package_name.sh # 批量替换默认的项目名称
-│    ├── local_install.sh # 本地安装
-│    ├── local_test.sh # 本地测试
-│    └── upload_pypi.sh # 上传到 pypi
-├── requirements.txt # 项目依赖
-├── .gitignore # 忽略文件
-├── MANIFEST.in # 要包含在 sdist 命令构建的分发中的文件列表。
-├── LICENSE # 这里面的内容为本项目的 License，你需要手动替换它。
-└── setup.py # 安装配置
+kintone      = kintone.Kintone('APIトークン', 'サブドメイン', 'アプリID')
+kintone_file = kintone_file.KintoneFile('APIトークン', 'サブドメイン')
 ```
 
-## 3 TODO
+# Features
 
-- [ ] 增加 test 相关代码。
+skintone は Kintone を Python で操作するためのライブラリです。  
+skintone は[Kintone REST API](https://developer.cybozu.io/hc/ja/articles/360000313406-kintone-REST-API%E4%B8%80%E8%A6%A7)の以下に対応しています
 
-## 4 许可
+- [レコードの取得](https://developer.cybozu.io/hc/ja/articles/202331474)
+- [レコードの一括取得](https://developer.cybozu.io/hc/ja/articles/360029152012)
+- [レコードの登録](https://developer.cybozu.io/hc/ja/articles/202166160)
+- [レコードの更新](https://developer.cybozu.io/hc/ja/articles/201941784)
+- [レコードの削除](https://developer.cybozu.io/hc/ja/articles/201941794)
+- [レコードコメントの投稿](https://developer.cybozu.io/hc/ja/articles/209758903)
+- [レコードコメントの削除](https://developer.cybozu.io/hc/ja/articles/209758703)
+- [レコードコメントの一括取得](https://developer.cybozu.io/hc/ja/articles/208242326)
+- [ファイルアップロード](https://developer.cybozu.io/hc/ja/articles/201941824)
+- [ファイルダウンロード](https://developer.cybozu.io/hc/ja/articles/202166180)
 
-[![](https://award.dovolopor.com?lt=License&rt=MIT&rbc=green)](./LICENSE)
+# Requirement
 
-## 5 参考
+skintone は Python3 系で動作し、以下のライブラリに依存します。
 
-- [Packaging Python Projects](https://packaging.python.org/en/latest/tutorials/packaging-projects/)
-- [如何从模板创建仓库？](https://docs.github.com/cn/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template)
-- [如何发布自己的包到 pypi ？](https://www.v2ai.cn/2018/07/30/python/1-pypi/)
+- [requests](https://pypi.org/project/requests/)
+
+# Installation
+
+```bash
+pip install skintone
+```
+
+# Usage
+
+- レコードの取得（複数）
+
+```python
+#呼び出し方
+kintone.select(where,order,limit,fields)
+"""
+引数は省略可能です
+
+・レコードのソートをする場合はwhereには書かず、orderに記述してください
+・limitを指定する場合はwhereには書かず、limitに数値を記述してください
+・fieldsを省略した場合、全フィールドを取得します
+・idとrevisionは指定していなくても取得します
+・500件より多いレコードを取得することは出来ません
+"""
+
+#例
+where    = 'フィールドコート１ = "value"'
+order    = 'order by $id asc'
+limit    = 500
+fields   = ['フィールドコート１','フィールドコート２','サブテーブル']
+response = kintone.select(where=where,order=order,limit=limit,fields=fields)
+
+"""
+レスポンスの例
+[
+    {
+        '$id':1,
+        'revision':1,
+        'フィールドコート１':'value',
+        'フィールドコート２':'value',
+        'サブテーブル':
+        [
+            {
+                'id': '1111111',   #テーブルの行ID
+                'フィールドコート１':'value',
+                'フィールドコート２':'value',
+            },
+            {
+                'id': '1111112',   #テーブルの行ID
+                'フィールドコート１':'value',
+                'フィールドコート２':'value',
+            }
+        ]
+    },
+    {
+        '$id':2,
+        'revision':1,
+        'フィールドコート１':'value',
+        'フィールドコート２':'value',
+        'サブテーブル':
+        [
+            {
+                'id': '2222222',   #テーブルの行ID
+                'フィールドコート１':'value',
+                'フィールドコート２':'value',
+            },
+            {
+                'id': '2222223',   #テーブルの行ID
+                'フィールドコート１':'value',
+                'フィールドコート２':'value',
+            }
+        ]
+    }
+]
+
+"""
+```
+
+- レコードの取得（一件）
+
+```python
+#呼び出し方
+#引数に取得するレコードIDを指定します
+kintone.selectRec(recordID)
+
+#例
+recordID = 1
+response = kintone.selectRec(recordID)
+
+"""
+レスポンスの例
+{
+    '$id':1,
+    'revision':1,
+    'フィールドコート１':'value',
+    'フィールドコート２':'value',
+    'サブテーブル':
+    [
+        {
+            'id': '1111111',   #テーブルの行ID
+            'フィールドコート１':'value',
+            'フィールドコート２':'value',
+        },
+        {
+            'id': '1111112',   #テーブルの行ID
+            'フィールドコート１':'value',
+            'フィールドコート２':'value',
+        }
+    ],
+}
+
+"""
+```
+
+- レコードの取得（全件）
+
+```python
+#呼び出し方
+kintone.selectAll(where,fields)
+"""
+引数は省略可能です
+
+・order byを指定することはできません
+・limitを指定することはできません
+・fieldsを省略した場合、全フィールドを取得します
+・idとrevisionは指定していなくても取得します
+・対象のレコードをすべて取得します（offset上限対応）
+"""
+
+#例
+where    = 'フィールドコート１ = "value"'
+fields   = ['フィールドコート１','フィールドコート２','サブテーブル']
+response = kintone.select(where=where, fields=fields)
+
+"""
+レスポンスの例
+[
+    {
+        '$id':1,
+        'revision':1,
+        'フィールドコート１':'value',
+        'フィールドコート２':'value',
+        'サブテーブル':
+        [
+            {
+                'id': '1111111',   #テーブルの行ID
+                'フィールドコート１':'value',
+                'フィールドコート２':'value',
+            },
+            {
+                'id': '1111112',   #テーブルの行ID
+                'フィールドコート１':'value',
+                'フィールドコート２':'value',
+            }
+        ]
+    },
+    {
+        '$id':2,
+        'revision':1,
+        'フィールドコート１':'value',
+        'フィールドコート２':'value',
+        'サブテーブル':
+        [
+            {
+                'id': '2222222',   #テーブルの行ID
+                'フィールドコート１':'value',
+                'フィールドコート２':'value',
+            },
+            {
+                'id': '2222223',   #テーブルの行ID
+                'フィールドコート１':'value',
+                'フィールドコート２':'value',
+            }
+        ]
+    }
+]
+
+"""
+```
+
+- レコードの登録（一括）
+
+```python
+#呼び出し方
+#insert関数の引数はリスト型でなくてはいけません
+kintone.insert(records)
+
+#例
+records = [
+    {
+        '文字列__1行':'value',
+        '文字列__複数行':'value\nvalue2',
+        'チェックボックス':
+            [
+                'sample1',
+                'sample2'
+            ],
+        'ユーザー選択':
+            [
+                'ログイン名１',
+                'ログイン名２'
+            ],
+        'サブテーブル':
+        [
+            {
+                '文字列__1行':'value',
+                '文字列__複数行':'value\nvalue2',
+                'チェックボックス':
+                    [
+                        'sample1',
+                        'sample2'
+                    ]
+            },
+            {
+                '文字列__1行':'value',
+                '文字列__複数行':'value\nvalue2',
+                'チェックボックス':
+                    [
+                        'sample1',
+                        'sample2'
+                    ]
+            }
+        ]
+    },
+    {
+        '文字列__1行':'value',
+        '文字列__複数行':'value\nvalue2',
+        ............
+    }
+]
+
+response = kintone.insert(records)
+
+"""
+レスポンスの例
+{
+    'ids':['1','2'],
+    'revisions':['1','1']
+}
+"""
+```
+
+- レコードの登録（一件）
+
+```python
+#呼び出し方
+#insertRec関数の引数は辞書型でなくてはいけません
+kintone.insertRec(record)
+
+#例
+record = {
+    '文字列__1行':'value',
+    '文字列__複数行':'value\nvalue2',
+    'チェックボックス':
+        [
+            'sample1',
+            'sample2'
+        ],
+    'ユーザー選択':
+        [
+            'ログイン名１',
+            'ログイン名２'
+        ],
+    'サブテーブル':
+        [
+            {
+                '文字列__1行':'value',
+                '文字列__複数行':'value\nvalue2',
+                'チェックボックス':
+                    [
+                        'sample1',
+                        'sample2'
+                    ]
+            },
+            {
+                '文字列__1行':'value',
+                '文字列__複数行':'value\nvalue2',
+                'チェックボックス':
+                    [
+                        'sample1',
+                        'sample2'
+                    ]
+            }
+        ]
+}
+
+response = kintone.insertRec(record)
+"""
+レスポンスの例
+{
+    'id': '1',
+    'revision': '1'
+}
+"""
+```
+
+- レコードの更新（一括）
+
+```python
+#呼び出し方
+#update関数の引数はリスト型でなくてはいけません
+kintone.update(records)
+
+"""
+登録するレコードにidもしくはupdateKeyを指定する必要があります
+"""
+
+#例
+records = [
+    {
+        '$id':'1',
+        '文字列__1行':'value',
+        '文字列__複数行':'value\nvalue2',
+        'チェックボックス':
+            [
+                'sample1',
+                'sample2'
+            ],
+        'ユーザー選択':
+            [
+                'ログイン名１',
+                'ログイン名２'
+            ],
+        'サブテーブル':
+        [
+            {
+                '文字列__1行':'value',
+                '文字列__複数行':'value\nvalue2',
+                'チェックボックス':
+                    [
+                        'sample1',
+                        'sample2'
+                    ]
+            },
+            {
+                '文字列__1行':'value',
+                '文字列__複数行':'value\nvalue2',
+                'チェックボックス':
+                    [
+                        'sample1',
+                        'sample2'
+                    ]
+            }
+        ]
+    },
+    {
+        'updateKey':
+        {
+            'field':'重複禁止のフィールドコート',
+            'value':'value'
+        },
+        '文字列__1行':'value',
+        '文字列__複数行':'value\nvalue2',
+        ............
+    }
+]
+
+response = kintone.update(records)
+"""
+レスポンスの例
+{
+    'records':[
+        {
+            'id':'1',
+            'revision':'2'
+        },
+        {
+            'id':'2',
+            'revision':'2'
+        }
+    ]
+}
+"""
+```
+
+- レコードの更新（一件）
+
+```python
+#呼び出し方
+#updateRec関数の引数は辞書型でなくてはいけません
+kintone.updateRec(record)
+
+"""
+登録するレコードにidもしくはupdateKeyを指定する必要があります
+"""
+#例
+
+record = {
+    '$id':'1',
+    '文字列__1行':'value',
+    '文字列__複数行':'value\nvalue2',
+    'チェックボックス':
+        [
+            'sample1',
+            'sample2'
+        ],
+    'ユーザー選択':
+        [
+            'ログイン名１',
+            'ログイン名２'
+        ],
+    'サブテーブル':
+        [
+            {
+                '文字列__1行':'value',
+                '文字列__複数行':'value\nvalue2',
+                'チェックボックス':
+                    [
+                        'sample1',
+                        'sample2'
+                    ]
+            },
+            {
+                '文字列__1行':'value',
+                '文字列__複数行':'value\nvalue2',
+                'チェックボックス':
+                    [
+                        'sample1',
+                        'sample2'
+                    ]
+            }
+}
+
+response = kintone.updateRec(record)
+"""
+レスポンスの例
+{
+    'revision': '2'
+}
+"""
+```
+
+- レコードの削除
+
+```python
+#呼び出し方
+#delete関数の引数はリスト型でなくてはいけません
+kintone.delete(recordIDs)
+
+#例
+
+recordIDs = ['1','2','3']
+
+response = kintone.delete(recordIDs)
+"""
+レスポンスの例
+{}
+"""
+#リクエスト成功時は空の辞書が戻ってきます
+```
+
+- レコードコメントの投稿
+
+```python
+#呼び出し方
+kintone.postComment(recordID, text, mentions)
+
+#例
+
+text      = "システムからのコメントです。\nご確認をお願いします。"
+mentions  = [
+    {
+        "code": "takahashi",
+        "type": "USER"
+    },
+    {
+        // メンション先のユーザーにゲストユーザーを指定する場合
+        "code": "guest/yamada@test.jp",
+        "type": "USER"
+    },
+]
+
+response = kintone.postComment(recordID=1, text=text, mentions=mentions)
+"""
+レスポンスの例
+{
+    "id": 1
+}
+"""
+#投稿したコメントのIDが返されます
+```
+
+- レコードコメントの削除
+
+```python
+#呼び出し方
+kintone.deleteComment(recordID, commentID)
+
+#例
+response = kintone.deleteComment(recordID=1, comment=1)
+
+"""
+レスポンスの例
+{}
+"""
+#リクエスト成功時は空の辞書が戻ってきます
+```
+
+- レコードコメントの一括取得
+
+```python
+#呼び出し方
+kintone.selectComment(recordID, order, offset, limit)
+"""
+order,offset,limitは省略可能です
+"""
+
+#例
+response = kintone.selectComment(recordID=1, order='desc', offset=0, limit=10)
+
+"""
+レスポンスの例
+{
+    "comments": [
+        {
+            "id": "2",
+            "text": "佐藤　昇 \nありがとうございます。内容を確認しました。\n引き続きよろしくお願いします！",
+            "createdAt": "2016-04-12T23:49:00Z",
+            "creator": {
+                "code": "kato",
+                "name": "加藤　美咲"
+            },
+            "mentions": [
+                {
+                    "code": "sato",
+                    "type": "USER"
+                }
+            ]
+        },
+        {
+            "id": "1",
+            "text": "加藤　美咲   営業本部 管理部受付 \n\n本日の作業レポートです。\n高橋　しおり さん、ご確認をお願いします。",
+            "createdAt": "2016-04-12T23:46:00Z",
+            "creator": {
+                "code": "sato",
+                "name": "佐藤　昇"
+            },
+            "mentions": [
+                {
+                    "code": "kato",
+                    "type": "USER"
+                },
+                {
+                    "code": "営業本部_OZKQWZ",
+                    "type": "ORGANIZATION"
+                },
+                {
+                    "code": "管理部受付_zX6C6r",
+                    "type": "GROUP"
+                },
+                {
+                    "code": "takahashi",
+                    "type": "USER"
+                }
+            ]
+        }
+    ],
+    "older": false,
+    "newer": false
+}
+"""
+```
+
+- ファイルのアップロード
+
+```python
+#呼び出し方
+kintone_file.uploadFile(file)
+
+#例
+with open('ファイルのパス', mode='rb') as f:
+    response = kintone_file.uploadFile(f)
+
+"""
+レスポンスの例
+{
+    "fileKey": "c15b3870-7505-4ab6-9d8d-b9bdbc74f5d6"
+}
+"""
+```
+
+- ファイルのダウンロード
+
+```python
+#呼び出し方
+kintone_file.downloadFile(fileKey)
+
+#例
+fileKey  = 'c15b3870-7505-4ab6-9d8d-b9bdbc74f5d6'
+response = kintone_file.downloadFile(fileKey=fileKey)
+
+"""
+バイナリデータがレスポンスされます
+"""
+```
+
+# Author
+
+本插件完全借助于 Masashi Tsuruya 的 pytone,
+但是 pip 仓库里面的代码没有更新 token 认证方式，所以只能自己弄了一个仓库
+
+# License
+
+"skintone" is under [MIT license](https://en.wikipedia.org/wiki/MIT_License).

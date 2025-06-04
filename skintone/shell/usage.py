@@ -1,12 +1,12 @@
 from time import ctime
 
-from package_name import __version__
+from skintone import __version__
 
 
 def run():
     cur_time = ctime()
     text = f"""
-    # package_name
+    # skintone
     
     version {__version__} ({cur_time} +0800)
     """

@@ -2,12 +2,12 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-NAME = "package_name"
-AUTHOR = "your user name"
-EMAIL = "your email"
-URL = "your project url"
-LICENSE = "your license"
-DESCRIPTION = "your project description"
+NAME = "skintone"
+AUTHOR = "sai"
+EMAIL = "d53520@gmail.com"
+URL = "https://www.google.com"
+LICENSE = "MIT License"
+DESCRIPTION = "my first package"
 
 if sys.version_info < (3, 6, 0):
     raise RuntimeError(f"{NAME} requires Python >=3.6.0, but yours is {sys.version}!")
@@ -22,7 +22,7 @@ try:
                 break
         exec(v_line)  # get __version__ from __init__.py
 except FileNotFoundError:
-    __version__ = "0.0.0"
+    __version__ = "0.0.2"
 
 try:
     with open("README.md", encoding="utf8") as f_r:
@@ -47,11 +47,11 @@ if __name__ == "__main__":
         long_description_content_type="text/markdown",
         entry_points={
             "console_scripts": [
-                "package_name=package_name.shell:run"
+                "skintone=skintone.shell:run"
             ]
         },
         package_data={
-            "package_name": ["src/*.txt"]
+            "skintone": ["src/*.txt"]
         },
         zip_safe=True,
         classifiers=[
