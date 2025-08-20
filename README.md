@@ -1,5 +1,5 @@
 # skintone
-
+用于改写zenkPytone代码 
 skintone は[Kintone](https://kintone.cybozu.co.jp/index.html)にアクセスするための Python ライブラリです。
 
 ```python
