@@ -1,5 +1,9 @@
 # skintone
-用于改写zenkPytone代码 
+
+用于改写 zenkPytone 代码
+由于作者不更改验证方式,只能自己修改一份
+主要是自己使用
+
 skintone は[Kintone](https://kintone.cybozu.co.jp/index.html)にアクセスするための Python ライブラリです。
 
 ```python
