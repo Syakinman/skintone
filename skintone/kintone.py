@@ -1,24 +1,23 @@
-import json
-import sys
 import requests
+
 
 class Kintone:
 
-    def __init__(self,api_token,domain,app):
+    def __init__(self, api_token, domain, app):
         self.api_token = api_token
-        self.rootURL   = 'https://{}.cybozu.com/k/v1/'.format(domain)
-        self.app       = app
-        self.headers   = {
+        self.rootURL = 'https://{}.cybozu.com/k/v1/'.format(domain)
+        self.app = app
+        self.headers = {
             "X-Cybozu-API-Token": self.api_token,
             'Content-Type': 'application/json'
         }
-        self.property  = self.get_property()
+        self.property = self.get_property()
 
     def requestKintone(self, method, url, json):
         if method == 'GET':
             try:
                 response = requests.get(url, json=json, headers=self.headers)
-                #ステータスコードチェック
+                # ステータスコードチェック
                 response.raise_for_status()
                 return response.json()
             except requests.exceptions.RequestException:
@@ -27,7 +26,7 @@ class Kintone:
         if method == 'POST':
             try:
                 response = requests.post(url, json=json, headers=self.headers)
-                #ステータスコードチェック
+                # ステータスコードチェック
                 response.raise_for_status()
                 return response.json()
             except requests.exceptions.RequestException:
@@ -36,7 +35,7 @@ class Kintone:
         if method == 'PUT':
             try:
                 response = requests.put(url, json=json, headers=self.headers)
-                #ステータスコードチェック
+                # ステータスコードチェック
                 response.raise_for_status()
                 return response.json()
             except requests.exceptions.RequestException:
@@ -44,13 +43,13 @@ class Kintone:
 
         if method == 'DELETE':
             try:
-                response = requests.delete(url, json=json, headers=self.headers)
-                #ステータスコードチェック
+                response = requests.delete(
+                    url, json=json, headers=self.headers)
+                # ステータスコードチェック
                 response.raise_for_status()
                 return response.json()
             except requests.exceptions.RequestException:
                 raise Exception(response.json())
-
 
     def get_property(self):
         params = {
@@ -59,11 +58,11 @@ class Kintone:
         }
         url = self.rootURL + 'app/form/fields.json'
 
-        response   = self.requestKintone(method='GET', url=url, json=params)
+        response = self.requestKintone(method='GET', url=url, json=params)
         properties = response['properties']
         return properties
 
-    def selectAll(self,where=None, fields=None):
+    def selectAll(self, where=None, fields=None):
         """
         selectAll is function to get records from Kintone.\n
         Get all fields if "field" is not specified.\n
@@ -71,30 +70,32 @@ class Kintone:
         Always get "id" and "revision".
         """
         params = {
-            'app'       : self.app,
-            'query'     : '',
+            'app': self.app,
+            'query': '',
             'totalCount': True,
         }
         if fields is not None:
             params['fields'] = list(set(fields + ['$id', '$revision']))
 
-        url       = self.rootURL + 'records.json'
+        url = self.rootURL + 'records.json'
 
         lastRecID = '0'
-        records   = []
+        records = []
 
         while True:
             if where is None:
-                params['query'] = '($id > ' + lastRecID + ' ) order by $id asc limit 500'
+                params['query'] = '($id > ' + lastRecID + \
+                    ' ) order by $id asc limit 500'
             else:
-                params['query'] = '($id > ' + lastRecID + ' ) and (' + where + ') order by $id asc limit 500'
+                params['query'] = '($id > ' + lastRecID + ' ) and (' + \
+                    where + ') order by $id asc limit 500'
 
-            response   = self.requestKintone(method='GET', url=url, json=params)
+            response = self.requestKintone(method='GET', url=url, json=params)
             totalCount = int(response['totalCount'])
 
             if totalCount == 0:
                 break
-            #レコードIDの最大値を取得
+            # レコードIDの最大値を取得
             lastRecID = response['records'][-1]['$id']['value']
             records.extend(response['records'])
 
@@ -105,28 +106,30 @@ class Kintone:
         for record in records:
             tmp_record = {}
             for field_code, value in record.items():
-                field_type  = value['type' ]
+                field_type = value['type']
                 field_value = value['value']
 
                 if field_type == 'NUMBER' and field_value is not None and field_value != "":
-                    #intかfloatにキャスト
+                    # intかfloatにキャスト
                     try:
                         field_value = int(field_value)
                     except ValueError:
                         field_value = float(field_value)
 
                 if field_type == 'SUBTABLE':
-                    subtable        = []
+                    subtable = []
                     for sub_rec in field_value:
                         subtable_record = {}
                         subtable_record['id'] = sub_rec['id']
                         for sub_field_code, sub_value in sub_rec['value'].items():
                             if sub_value['type'] == 'NUMBER' and field_value is not None:
-                                #intかfloatにキャスト
+                                # intかfloatにキャスト
                                 try:
-                                    sub_value['value'] = int(sub_value['value'])
+                                    sub_value['value'] = int(
+                                        sub_value['value'])
                                 except ValueError:
-                                    sub_value['value'] = float(sub_value['value'])
+                                    sub_value['value'] = float(
+                                        sub_value['value'])
 
                             subtable_record[sub_field_code] = sub_value['value']
                         subtable.append(subtable_record)
@@ -137,7 +140,7 @@ class Kintone:
 
         return result
 
-    def select(self,where=None, order=None , limit=None, fields=None):
+    def select(self, where=None, order=None, limit=None, fields=None):
         """
         select is function to get records from Kintone.\n
         Get all fields if "field" is not specified.\n
@@ -145,14 +148,14 @@ class Kintone:
         Always get "id" and "revision".
         """
         params = {
-            'app'       : self.app,
-            'query'     : '($id > 0)',
+            'app': self.app,
+            'query': '($id > 0)',
             'totalCount': True,
         }
         if fields is not None:
             params['fields'] = list(set(fields + ['$id', '$revision']))
 
-        url       = self.rootURL + 'records.json'
+        url = self.rootURL + 'records.json'
 
         if where is not None:
             params['query'] += ' and (' + where + ')'
@@ -164,34 +167,36 @@ class Kintone:
             params['query'] += ' limit ' + str(limit)
 
         response = self.requestKintone(method='GET', url=url, json=params)
-        records  = response['records']
+        records = response['records']
 
         result = []
         for record in records:
             tmp_record = {}
             for field_code, value in record.items():
-                field_type  = value['type' ]
+                field_type = value['type']
                 field_value = value['value']
 
                 if field_type == 'NUMBER' and field_value is not None and field_value != "":
-                    #intかfloatにキャスト
+                    # intかfloatにキャスト
                     try:
                         field_value = int(field_value)
                     except ValueError:
                         field_value = float(field_value)
 
                 if field_type == 'SUBTABLE':
-                    subtable        = []
+                    subtable = []
                     for sub_rec in field_value:
                         subtable_record = {}
                         subtable_record['id'] = sub_rec['id']
                         for sub_field_code, sub_value in sub_rec['value'].items():
                             if sub_value['type'] == 'NUMBER' and field_value is not None:
-                                #intかfloatにキャスト
+                                # intかfloatにキャスト
                                 try:
-                                    sub_value['value'] = int(sub_value['value'])
+                                    sub_value['value'] = int(
+                                        sub_value['value'])
                                 except ValueError:
-                                    sub_value['value'] = float(sub_value['value'])
+                                    sub_value['value'] = float(
+                                        sub_value['value'])
 
                             subtable_record[sub_field_code] = sub_value['value']
                         subtable.append(subtable_record)
@@ -202,14 +207,14 @@ class Kintone:
 
         return result
 
-    def selectRec(self,recordID):
+    def selectRec(self, recordID):
         """
         selectRec is function to get 1 record of Kintone.\n
         recordID = Specify the record ID.
         """
         params = {
             'app': self.app,
-            'id' : recordID
+            'id': recordID
         }
         url = self.rootURL + 'record.json'
 
@@ -217,24 +222,24 @@ class Kintone:
         result = {}
 
         for field_code, value in record['record'].items():
-            field_type  = value['type' ]
+            field_type = value['type']
             field_value = value['value']
 
             if field_type == 'NUMBER' and field_value is not None and field_value != "":
-                #intかfloatにキャスト
+                # intかfloatにキャスト
                 try:
                     field_value = int(field_value)
                 except ValueError:
                     field_value = float(field_value)
 
             if field_type == 'SUBTABLE':
-                subtable        = []
+                subtable = []
                 for sub_rec in field_value:
                     subtable_record = {}
                     subtable_record['id'] = sub_rec['id']
                     for sub_field_code, sub_value in sub_rec['value'].items():
                         if sub_value['type'] == 'NUMBER' and field_value is not None:
-                            #intかfloatにキャスト
+                            # intかfloatにキャスト
                             try:
                                 sub_value['value'] = int(sub_value['value'])
                             except ValueError:
@@ -248,7 +253,7 @@ class Kintone:
 
         return result
 
-    def insert(self,records:list):
+    def insert(self, records: list):
         """
         insert is Function for inserting records in kintone.\n
         records = Specify the record information (field code and field value) in the list.\n
@@ -258,7 +263,8 @@ class Kintone:
             }
         ]
         """
-        if type(records) != list:
+        # if type(records) != list:
+        if not isinstance(records, list):
             raise Exception('Argument is not a list')
         params = {
             'app': self.app,
@@ -267,12 +273,12 @@ class Kintone:
             ]
         }
         tmp_param = {}
-        url       = self.rootURL + 'records.json'
+        url = self.rootURL + 'records.json'
         parameter = self.property
-        resp      = []
+        resp = []
 
         for record in records:
-            #100件づつKintoneに登録する
+            # 100件づつKintoneに登録する
             if len(params['records']) == 100:
                 resp = self.requestKintone(method='POST', url=url, json=params)
                 params['records'] = []
@@ -282,7 +288,7 @@ class Kintone:
                 if parameter[key]['type'] in ('USER_SELECT', 'ORGANIZATION_SELECT', 'GROUP_SELECT'):
                     codes = []
                     for val in value:
-                        codes.append({'code':val})
+                        codes.append({'code': val})
                     tmp_param[key] = {
                         'value': codes
                     }
@@ -307,7 +313,7 @@ class Kintone:
                                 for val in sub_value:
                                     codes.append({'code': val})
                                 sub_dict[sub_key] = {
-                                    'value':codes
+                                    'value': codes
                                 }
                             elif parameter[key]['fields'][sub_key]['type'] == 'FILE':
                                 fileKeys = []
@@ -318,10 +324,10 @@ class Kintone:
                                 }
                             else:
                                 sub_dict[sub_key] = {
-                                    'value':sub_value
+                                    'value': sub_value
                                 }
                         tmp_param[key]['value'].append({
-                                'value':sub_dict
+                            'value': sub_dict
                         })
                     continue
                 else:
@@ -331,12 +337,13 @@ class Kintone:
                     continue
             params['records'].append(tmp_param)
             tmp_param = {}
-        #最後に残りを追加する
+        # 最後に残りを追加する
         if params['records']:
             resp = self.requestKintone(method='POST', url=url, json=params)
 
         return resp
-    def insertRec(self,record:dict):
+
+    def insertRec(self, record: dict):
         """
         insertRec is Function for inserting 1 record in kintone.\n
         record = Specify the record information (field code and field value) in the dict.\n
@@ -344,8 +351,9 @@ class Kintone:
             'field_code': 'value'
         }
         """
-        #引数の型チェック
-        if type(record) != dict:
+        # 引数の型チェック
+        # if type(record) != dict:
+        if not isinstance(record, dict):
             raise Exception('Argument is not a dict')
         params = {
             'app': self.app,
@@ -401,8 +409,8 @@ class Kintone:
                                 'value': sub_value
                             }
                     params['record'][key]['value'].append({
-                            'value': sub_dict
-                        })
+                        'value': sub_dict
+                    })
                 continue
             else:
                 params['record'][key] = {
@@ -413,7 +421,7 @@ class Kintone:
 
         return resp
 
-    def update(self, records:list):
+    def update(self, records: list):
         """
         update is function for updating records in kintone.\n
         records = data to update in kintone.\n
@@ -429,7 +437,8 @@ class Kintone:
             }
         ]
         """
-        if type(records) != list:
+        # if type(records) != list:
+        if not isinstance(records, list):
             raise Exception('Argument is not a list')
         params = {
             'app': self.app,
@@ -438,12 +447,12 @@ class Kintone:
             ]
         }
         tmp_param = {}
-        url       = self.rootURL + 'records.json'
+        url = self.rootURL + 'records.json'
         parameter = self.property
-        resp      = []
+        resp = []
 
         for record in records:
-            #100件づつKintoneに登録する
+            # 100件づつKintoneに登録する
             if len(params['records']) == 100:
                 resp = self.requestKintone(method='PUT', url=url, json=params)
                 params['records'] = []
@@ -451,14 +460,14 @@ class Kintone:
             for key, value in record.items():
                 if key == '$revision':
                     continue
-                #レコードIDを取得する
-                if key in ('id','$id'):
+                # レコードIDを取得する
+                if key in ('id', '$id'):
                     tmp_param['id'] = value
                     continue
                 elif key == 'updateKey':
                     tmp_param['updateKey'] = {
-                        'field':value['field'],
-                        'value':value['value']
+                        'field': value['field'],
+                        'value': value['value']
                     }
                     continue
                 elif parameter[key]['type'] in ('USER_SELECT', 'ORGANIZATION_SELECT', 'GROUP_SELECT'):
@@ -483,7 +492,7 @@ class Kintone:
                     }
                     for sub_rec in value:
                         sub_dict = {}
-                        sub_id   = ''
+                        sub_id = ''
                         for sub_key, sub_value in sub_rec.items():
                             if sub_key == 'id':
                                 sub_id = sub_value
@@ -508,7 +517,7 @@ class Kintone:
                                 }
                         if sub_id:
                             tmp_param['record'][key]['value'].append({
-                                'id'   : sub_id,
+                                'id': sub_id,
                                 'value': sub_dict
                             })
                         else:
@@ -523,13 +532,13 @@ class Kintone:
                     continue
             params['records'].append(tmp_param)
             tmp_param = {}
-        #最後に残りを追加する
+        # 最後に残りを追加する
         if params['records']:
             resp = self.requestKintone(method='PUT', url=url, json=params)
 
         return resp
 
-    def updateRec(self,record:dict):
+    def updateRec(self, record: dict):
         """
         updateRec is function for updating 1 record in kintone.\n
         record = data to update in kintone.\n
@@ -543,7 +552,8 @@ class Kintone:
             'field_code': 'value'
         }
         """
-        if type(record) != dict:
+        # if type(record) != dict:
+        if not isinstance(record, dict):
             raise Exception('Argument is not a dict')
         params = {
             'app': self.app,
@@ -557,7 +567,7 @@ class Kintone:
         for key, value in record.items():
             if key == '$revision':
                 continue
-            #レコードIDを取得する
+            # レコードIDを取得する
             if key in ('id', '$id'):
                 params['id'] = value
                 continue
@@ -631,7 +641,7 @@ class Kintone:
 
         return resp
 
-    def delete(self,ids:list,revisions=None):
+    def delete(self, ids: list, revisions=None):
         """
         delete is function for deleting records in kintone.\n
         ids = Specify the record ID of the record to be deleted as a list.\n
@@ -640,7 +650,8 @@ class Kintone:
         If it does not match the actual revision number, an error will occur (no record will be deleted).
         However, if the value is -1 or not specified, the revision number will not be verified.
         """
-        if type(ids) != list:
+        # if type(ids) != list:
+        if not isinstance(ids, list):
             raise Exception('Argument is not a list')
 
         params = {
@@ -658,29 +669,33 @@ class Kintone:
 
         while len(ids) > 100:
             params['ids'] = ids[0:100]
-            response = self.requestKintone(method='DELETE', url=url, json=params)
+            response = self.requestKintone(
+                method='DELETE', url=url, json=params)
             del ids[0:100]
 
         if ids:
             params['ids'] = ids[0:100]
-            response = self.requestKintone(method='DELETE', url=url, json=params)
+            response = self.requestKintone(
+                method='DELETE', url=url, json=params)
 
         return response
 
-    def postComment(self, recordID, text:str, mentions=None):
+    def postComment(self, recordID, text: str, mentions=None):
         """
         postComment is function for posting comments to kintone.
         """
-        if type(text) != str:
+        # if type(text) != str:
+        if not isinstance(text, str):
             raise Exception('Argument is not a str')
-        if mentions is not None and type(mentions) != list:
+        # if mentions is not None and type(mentions) != list:
+        if mentions is not None and not isinstance(mentions, list):
             raise Exception('Argument is not a list')
 
         params = {
-            'app'    : self.app,
-            'record' : recordID,
+            'app': self.app,
+            'record': recordID,
             'comment': {
-                'text'    : text,
+                'text': text,
                 'mentions': mentions if mentions is not None else []
             }
         }
@@ -696,9 +711,9 @@ class Kintone:
         """
 
         params = {
-            'app'    : self.app,
-            'record' : recordID,
-            'comment':commentID
+            'app': self.app,
+            'record': recordID,
+            'comment': commentID
         }
         url = self.rootURL + 'record/comment.json'
 
@@ -712,8 +727,8 @@ class Kintone:
         """
 
         params = {
-            'app'    : self.app,
-            'record' : recordID
+            'app': self.app,
+            'record': recordID
         }
         url = self.rootURL + 'record/comments.json'
 

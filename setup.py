@@ -8,7 +8,7 @@ with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
 
 setup(
     name="skintone",
-    version="0.0.2",
+    version="0.0.3",
     author="sai",
     author_email="d53520@gmail.com",
     description="Kintone REST API helper for Python",
@@ -21,7 +21,7 @@ setup(
     install_requires=[
         "requests>=2.0.0",
     ],
-    keywords=["python", "kintone", "api", "cybozu"],
+    keywords=["python", "kintone"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

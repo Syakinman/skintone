@@ -1,8 +1,7 @@
 # skintone
 
-用于改写 zenkPytone 代码
-由于作者不更改验证方式,只能自己修改一份
-主要是自己使用
+大部分基于 [Mr zenkPytone](https://zenk.co.jp/service/kintone/pytone/)代码改写
+由于作者没有在 pypi 上面更改为 token 的验证方式,无奈只能自己修改一份;此代码主要是自己使用;所以注释部分就相对来说比较随意
 
 skintone は[Kintone](https://kintone.cybozu.co.jp/index.html)にアクセスするための Python ライブラリです。
 
@@ -15,7 +14,6 @@ kintone_file = kintone_file.KintoneFile('APIトークン', 'サブドメイン')
 
 # Features
 
-skintone は Kintone を Python で操作するためのライブラリです。  
 skintone は[Kintone REST API](https://developer.cybozu.io/hc/ja/articles/360000313406-kintone-REST-API%E4%B8%80%E8%A6%A7)の以下に対応しています
 
 - [レコードの取得](https://developer.cybozu.io/hc/ja/articles/202331474)
@@ -637,3 +635,12 @@ response = kintone_file.downloadFile(fileKey=fileKey)
 # License
 
 "skintone" is under [MIT license](https://en.wikipedia.org/wiki/MIT_License).
+
+# 更新发布备忘
+
+```
+修改完善 setup.py
+进行本地测试 python setup.py develop
+编译 python3 setup.py sdist
+上传到pypi  twine upload dist/*
+```
